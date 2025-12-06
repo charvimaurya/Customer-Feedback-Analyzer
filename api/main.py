@@ -4,8 +4,8 @@ from pydantic import BaseModel
 app = FastAPI()
 
 try:
-    vectorizer = joblib.load('../models/tfidf_vectorizer.pkl')
-    model = joblib.load('../models/logistic_regression.pkl')
+    vectorizer = joblib.load('../models/tfidf_vectorizer_updated.pkl')
+    model = joblib.load('../models/logistic_regression_updated.pkl')
 except Exception as e:
     raise RuntimeError(f'Model failed loading: {e}')
 
@@ -29,7 +29,8 @@ def predict_sentiment(review: str):
 
         # Predict
         pred = model.predict(X)[0]
-        sentiment = "Good" if pred == 2 else "Bad"
+
+        sentiment = "Good" if pred == 2 else "Neutral" if pred == 1 else "Bad"
 
         return {"sentiment": sentiment}
 
