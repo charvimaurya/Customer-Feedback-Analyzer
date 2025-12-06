@@ -1,0 +1,10 @@
+pandas
+numpy
+scikit-learn
+gdown
+matplotlib
+seaborn
+jupyter
+notebook
+imbalanced-learn
+nltk
