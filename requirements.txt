@@ -8,3 +8,12 @@ jupyter
 notebook
 imbalanced-learn
 nltk
+fastapi
+uvicorn
+sqlalchemy
+psycopg2-binary
+python-dotenv
+joblib
+pydantic
+openai
+requests

@@ -1,28 +1,45 @@
-import openai
+import os
 import requests
 from openai import OpenAI
-openai.api_key = "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"
+from dotenv import load_dotenv
 
-client = OpenAI(api_key=openai.api_key)
-API_URL = "http://127.0.0.1:8000/predict"
+load_dotenv()
+
+# Use environment variable for API key
+api_key = os.getenv("OPENAI_API_KEY", "your-api-key-here")
+client = OpenAI(api_key=api_key)
+
+# API URL - can be overridden by environment variable for Docker
+API_URL = os.getenv("API_URL", "http://127.0.0.1:8000/predict")
 
 def classify_review(review_text):
-    payload = {"review": review_text}
-    response = requests.post(API_URL, json=payload)
-    return response.json()["sentiment"]
-
+    try:
+        payload = {"review": review_text}
+        response = requests.post(API_URL, json=payload)
+        response.raise_for_status()
+        return response.json()["sentiment"]
+    except Exception as e:
+        print(f"Error classifying review: {e}")
+        return "Unknown"
 
 def chatbot_reply(user_input):
     sentiment = classify_review(user_input)
 
     prompt = f"The user said: '{user_input}'. The sentiment is {sentiment}. Respond helpfully."
-    response = client.ChatCompletion.create(
-        model="gpt-4.1",
-        messages=[{"role": "user", "content": prompt}]
-    )
-    return response.choices[0].message["content"]
+    try:
+        response = client.chat.completions.create(
+            model="gpt-4o",  # Using a standard modern model
+            messages=[{"role": "user", "content": prompt}]
+        )
+        return response.choices[0].message.content
+    except Exception as e:
+        return f"Chatbot error: {str(e)}"
 
 if __name__ == "__main__":
-    user_input = input("Enter a review or a product link: ")
-    reply = chatbot_reply(user_input)
-    print(reply)
+    print("Welcome to Customer Feedback Chatbot!")
+    while True:
+        user_input = input("\nEnter a review (or 'exit' to quit): ")
+        if user_input.lower() == 'exit':
+            break
+        reply = chatbot_reply(user_input)
+        print(f"\nAI: {reply}")
