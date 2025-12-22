@@ -1,17 +1,32 @@
 import joblib
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
+
 app = FastAPI()
 
-try:
-    vectorizer = joblib.load('../models/tfidf_vectorizer_updated.pkl')
-    model = joblib.load('../models/logistic_regression_updated.pkl')
-except Exception as e:
-    raise RuntimeError(f'Model failed loading: {e}')
+from services.chatbot import chat_with_openai
+
+import os
+
+
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+MODELS_DIR = os.path.join(BASE_DIR, "models")
+
+vectorizer = joblib.load(
+    os.path.join(MODELS_DIR, "tfidf_vectorizer_updated.pkl")
+)
+
+model = joblib.load(
+    os.path.join(MODELS_DIR, "logistic_regression_updated.pkl")
+)
 
 
 class ReviewRequest(BaseModel):
     review: str
+
+class ChatRequest(BaseModel):
+    message: str
+
 
 @app.get('/')
 def root():
@@ -39,5 +54,15 @@ def predict_sentiment(review: str):
 
     except Exception as e:
         # Catch-all error
+        raise HTTPException(status_code=500, detail=f"Prediction failed: {str(e)}")
+
+@app.post("/chat")
+def chat(user_input: str):
+    if not user_input or user_input.strip == "":
+        raise HTTPException(status_code=400, detail="Review cannot be empty.")
+    try:
+        reply = chat_with_openai(user_input)
+        return {"reply": reply}
+    except Exception as e:
         raise HTTPException(status_code=500, detail=f"Prediction failed: {str(e)}")
 
