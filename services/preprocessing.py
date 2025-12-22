@@ -16,7 +16,9 @@ def label_sentiment(score: int) -> int:
         return 0
     elif score == 3:
         return 1
-    return 2
+    else:
+        return 2
+
 
 
 def clean_text(text: str) -> str:
