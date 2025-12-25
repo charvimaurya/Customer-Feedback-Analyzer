@@ -28,7 +28,7 @@ def chatbot_reply(user_input):
     prompt = f"The user said: '{user_input}'. The sentiment is {sentiment}. Respond helpfully."
     try:
         response = client.chat.completions.create(
-            model="gpt-4o",  # Using a standard modern model
+            model="gpt-3.5-turbo",  # More affordable model, good for chatbots
             messages=[{"role": "user", "content": prompt}]
         )
         return response.choices[0].message.content
