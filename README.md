@@ -12,6 +12,44 @@ This application analyzes customer feedback sentiment (Positive, Neutral, or Neg
 - **Docker Support**: Fully containerized application with Docker Compose orchestration
 
 ---
+Customer-Feedback-Analyzer
+│
+├── api/                    # FastAPI application
+│   └── main.py
+│
+├── services/               # Core business logic
+│   ├── sentiment_service.py
+│   ├── review_analysis.py
+│   ├── chatbot.py
+│   ├── preprocessing.py
+│   └── chat_history.py
+│
+├── database/               # Database setup
+│   ├── db.py
+│   ├── models.py
+│   └── init_db.py
+│
+├── models/                 # ML models & vectorizers
+│   ├── logistic_regression.pkl
+│   └── tfidf_vectorizer.pkl
+│
+├── notebooks/              # Training & evaluation notebooks
+│
+├── utils/                  # Text utilities
+│
+├── index.html              # Simple frontend (file upload)
+├── Dockerfile
+├── requirements.txt
+└── README.md
+
+## Tech Stack
+| Layer      | Technology            |
+| ---------- | --------------------- |
+| Backend    | FastAPI               |
+| AI / NLP   | Scikit-learn + OpenAI |
+| Database   | PostgreSQL            |
+| Deployment | Docker                |
+
 
 ## Prerequisites
 
@@ -267,13 +305,22 @@ upload file
 
 The application uses a four-table PostgreSQL database structure:
 
-1. **`reviews`**: Stores original, unprocessed customer reviews
-2. **`cleanedreviews`**: Stores preprocessed text (lowercased, lemmatized, stop words removed)
-3. **`positive_reviews`**: Stores reviews classified as positive
-4. **`negative_reviews`**: Stores reviews classified as negative
-5. **`feedbacks`**: Legacy table maintaining all reviews with sentiment labels
+| Table              | Purpose                 |
+| ------------------ | ----------------------- |
+| raw_feedbacks      | Stores original reviews |
+| cleaned_feedbacks  | Preprocessed text       |
+| positive_feedbacks | Positive reviews        |
+| negative_feedbacks | Negative reviews        |
+| feedbacks          | Legacy combined table   |
+
 
 ---
+## Running with Docker
+1️⃣ Build the image
+docker build -t feedback-analyzer .
+
+2️⃣ Run the container
+docker run -p 8000:8000 --env-file .env feedback-analyzer
 
 ## Stopping the Application
 
@@ -399,28 +446,6 @@ If you prefer to run the application locally without Docker:
 
 ---
 
-## Project Structure
-
-```
-Customer-Feedback-Analyzer/
-├── api/
-│   ├── __init__.py
-│   └── main.py              # FastAPI application and endpoints
-├── chatbot/
-│   ├── __init__.py
-│   └── chatbot.py           # Interactive chatbot client
-├── models/
-│   ├── tfidf_vectorizer.pkl # TF-IDF vectorizer
-│   └── logistic_regression.pkl # Trained sentiment model
-├── notebooks/               # Jupyter notebooks for model training
-├── database.py              # Database models and connection
-├── main.py                  # Application entry point
-├── requirements.txt         # Python dependencies
-├── Dockerfile               # Docker container configuration
-├── docker-compose.yml       # Multi-container orchestration
-├── .env.example             # Environment variables template
-└── README.md                # This file
-```
 
 ---
 
