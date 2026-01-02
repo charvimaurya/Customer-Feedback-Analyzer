@@ -209,7 +209,7 @@ The chatbot provides a conversational interface for analyzing customer feedback.
 
 3. **Run the chatbot**:
    ```bash
-   python chatbot/chatbot.py
+   python services/chatbot.py
    ```
 
 4. **Interact with the chatbot**:
