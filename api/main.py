@@ -3,7 +3,6 @@ from fastapi import FastAPI, HTTPException, UploadFile, File, Depends
 from pydantic import BaseModel
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
-
 from services.review_analysis import read_reviews_from_file, analyze_reviews
 from services.sentiment_service import get_sentiment
 from services.chatbot import chat_with_openai
@@ -14,7 +13,7 @@ from database.models import (
     CleanedFeedback,
     PositiveFeedback,
     NegativeFeedback,
-    FeedbackLegacy
+    Feedback
 )
 
 # ----------------------
@@ -99,7 +98,7 @@ def predict_sentiment(
     elif sentiment == "Bad":
         db.add(NegativeFeedback(review=cleaned))
 
-    db.add(FeedbackLegacy(
+    db.add(Feedback(
         review=cleaned,
         sentiment=sentiment
     ))
@@ -137,7 +136,7 @@ def chat(
     elif sentiment == "Bad":
         db.add(NegativeFeedback(review=cleaned))
 
-    db.add(FeedbackLegacy(
+    db.add(Feedback(
         review=cleaned,
         sentiment=sentiment
     ))
@@ -187,7 +186,7 @@ def analyze_file(
         elif sentiment == "Bad":
             db.add(NegativeFeedback(review=cleaned))
 
-        db.add(FeedbackLegacy(
+        db.add(Feedback(
             review=cleaned,
             sentiment=sentiment
         ))
