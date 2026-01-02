@@ -11,7 +11,8 @@ This application analyzes customer feedback sentiment (Positive, Neutral, or Neg
 - **Interactive Chatbot**: CLI-based chatbot that combines sentiment analysis with conversational AI
 - **Docker Support**: Fully containerized application with Docker Compose orchestration
 
----
+## Project Structure 
+```
 Customer-Feedback-Analyzer
 │
 ├── api/                    # FastAPI application
@@ -41,6 +42,7 @@ Customer-Feedback-Analyzer
 ├── Dockerfile
 ├── requirements.txt
 └── README.md
+```
 
 ## Tech Stack
 | Layer      | Technology            |
