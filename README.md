@@ -21,7 +21,7 @@ Customer-Feedback-Analyzer
 ├── services/               # Core business logic
 │   ├── sentiment_service.py
 │   ├── review_analysis.py
-│   ├── chatbot.py
+│   ├── chatbot.py       # interactive chatbot 
 │   ├── preprocessing.py
 │   └── chat_history.py
 │
@@ -245,6 +245,12 @@ The chatbot provides a conversational interface for analyzing customer feedback.
 ```json
 {
   "review": "Your customer review text here"
+}
+```
+**Response**:
+```json
+{
+  "reply": "Good | Neutral | Bad"
 }
 ```
 #### `POST /chat`
