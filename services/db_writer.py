@@ -16,8 +16,11 @@ DB_PORT = os.getenv("DB_PORT")
 DATABASE_URL = (
     f"postgresql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
 )
-engine = create_engine("postgresql://postgres:Charvi1234!@localhost:5433/Customer Feedback Analyzer DB")
-# engine = create_engine(DATABASE_URL)
+#
+
+# engine = create_engine("postgresql://postgres:Charvi1234!@localhost:5432/Customer Feedback Analyzer")
+
+engine = create_engine(DATABASE_URL)
 
 DATA_DIR = "data"
 

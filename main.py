@@ -1,7 +1,7 @@
 import pandas as pd
 from services.preprocessing import clean_text, label_sentiment
 from services.db_writer import load_reviews
-from services.genai_insights import prepare_reviews_context
+# from services.genai_insights import prepare_reviews_context
 def main():
 
     df = load_reviews(limit=1000)

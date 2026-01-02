@@ -19,8 +19,6 @@ def label_sentiment(score: int) -> int:
     else:
         return 2
 
-
-
 def clean_text(text: str) -> str:
     """
     Clean and normalize review text

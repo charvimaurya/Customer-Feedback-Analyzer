@@ -8,7 +8,7 @@ api/.env
 services/genai_insights.py
 
 # Distribution / packaging
-
+services/.env
 .Python
 build/
 data/*.csv
