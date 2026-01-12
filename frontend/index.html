@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Customer Review Analyzer</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+
+<body>
+
+<h1>📊 Customer Review Analyzer</h1>
+
+<div class="container">
+
+  <!-- Predict -->
+  <div class="box">
+    <h2>🔍 Predict Sentiment</h2>
+    <textarea id="predictInput" placeholder="Enter a review..."></textarea>
+    <button id="predictBtn">Predict</button>
+    <p id="predictResult"></p>
+  </div>
+
+  <!-- Chat -->
+  <div class="box">
+    <h2>💬 Chat with AI</h2>
+    <textarea id="chatInput" placeholder="Enter a review..."></textarea>
+    <button id="chatBtn">Analyze & Explain</button>
+    <p id="chatResult"></p>
+  </div>
+
+  <!-- File Upload -->
+  <div class="box">
+    <h2>📁 File Analysis (.csv/ .txt) - should contain a review column</h2>
+    <input type="file" id="fileInput" />
+    <button id="fileBtn">Analyze File</button>
+    <div id="fileResult"></div>
+  </div>
+
+  <!-- History -->
+  <div class="box">
+    <h2>🕘 Chat History</h2>
+    <button id="historyBtn">Load History</button>
+    <ul id="historyList"></ul>
+  </div>
+
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
+
+

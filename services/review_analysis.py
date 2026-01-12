@@ -37,6 +37,8 @@ def read_reviews_from_file(file: UploadFile) -> list[str]:
     return reviews
 
 
+import json
+
 def analyze_reviews(reviews: list[str]) -> dict:
     classified = [
         {"review": r, "sentiment": s}
@@ -56,14 +58,34 @@ def analyze_reviews(reviews: list[str]) -> dict:
 
     prompt = build_analysis_prompt(stats, good, neutral, bad)
 
-    insights = chat_with_openai(prompt, sentiment = "Mixed", history = [], mode = "analysis")
+    raw_insights = chat_with_openai(
+        prompt,
+        sentiment="Mixed",
+        history=[],
+        mode="analysis"
+    )
+
+    try:
+        insights = json.loads(raw_insights)
+    except json.JSONDecodeError:
+        insights = {
+            "summary": "Unable to generate insights.",
+            "strengths": [],
+            "weaknesses": [],
+            "recommendations": [],
+            "trends": {
+                "positive": "",
+                "negative": ""
+            }
+        }
 
     return {
         "statistics": stats,
         "best_reviews": good[:5],
         "worst_reviews": bad[:5],
-        "insights": insights,
+        "insights": insights
     }
+
 
 
 def build_analysis_prompt(stats, good, neutral, bad) -> str:
@@ -73,24 +95,29 @@ def build_analysis_prompt(stats, good, neutral, bad) -> str:
     return f"""
 You are a product insights analyst.
 
-Stats:
-{stats}
+Return ONLY valid JSON.
+Do NOT include markdown.
+Do NOT include explanations outside JSON.
 
-Top positive themes:
-{pos_keywords}
+The JSON MUST have this exact structure:
 
-Top negative themes:
-{neg_keywords}
+{{
+  "summary": "",
+  "strengths": [],
+  "weaknesses": [],
+  "recommendations": [],
+  "trends": {{
+    "positive": "",
+    "negative": ""
+  }}
+}}
 
-Example positives:
-{good[:3]}
+Context:
+Stats: {stats}
+Positive themes: {pos_keywords}
+Negative themes: {neg_keywords}
 
-Example negatives:
-{bad[:3]}
-
-Provide:
-- Summary
-- Key strengths
-- Key weaknesses
-- Prioritized recommendations
+Example positives: {good[:3]}
+Example negatives: {bad[:3]}
 """
+
