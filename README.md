@@ -21,7 +21,7 @@ Customer-Feedback-Analyzer
 ├── services/               # Core business logic
 │   ├── sentiment_service.py
 │   ├── review_analysis.py
-│   ├── chatbot.py       # interactive chatbot 
+│   ├── chatbot.py           # Interactive CLI chatbot
 │   ├── preprocessing.py
 │   └── chat_history.py
 │
@@ -38,10 +38,15 @@ Customer-Feedback-Analyzer
 │
 ├── utils/                  # Text utilities
 │
-├── index.html              # Simple frontend (file upload)
+├── frontend/               # Web frontend
+│   ├── index.html
+│   ├── style.css
+│   └── script.js
+│
 ├── Dockerfile
 ├── requirements.txt
 └── README.md
+
 ```
 
 ## Tech Stack
@@ -50,6 +55,7 @@ Customer-Feedback-Analyzer
 | Backend    | FastAPI               |
 | AI / NLP   | Scikit-learn + OpenAI |
 | Database   | PostgreSQL            |
+| Frontend   | HTML, CSS, JS         |
 | Deployment | Docker                |
 
 
@@ -195,8 +201,31 @@ curl -X POST "http://localhost:8000/predict" \
 ```json
 {"sentiment": "Good"}
 ```
+### Step 6: Run the Web Frontend
 
-### Step 6: Run the Interactive Chatbot (Optional)
+Open frontend/index.html in a browser.
+
+Optional: Serve locally with Python:
+```bash
+cd frontend
+python -m http.server 5500
+```
+
+Open: http://localhost:5500/index.html
+
+Upload CSV/TXT with a review column for bulk analysis.
+
+Or enter a single review for sentiment & AI explanation.
+
+CSV Example:
+```csv
+review
+"This product is amazing!"
+"Battery stopped working after a week."
+"The design feels premium."
+```
+
+### Step 7: Run the Interactive Chatbot (Optional)
 
 The chatbot provides a conversational interface for analyzing customer feedback.
 
