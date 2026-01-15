@@ -6,7 +6,7 @@ api/.env
 # C extensions
 *.so
 services/genai_insights.py
-
+.env
 # Distribution / packaging
 services/.env
 .Python

@@ -21,9 +21,10 @@ from database.models import (
 # ----------------------
 app = FastAPI()
 
+#enabling cors to connect to front end
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # dev only
+    allow_origins=["*"],
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -44,9 +45,7 @@ def get_db():
 class ChatRequest(BaseModel):
     user_input: str
 
-# ----------------------
-# In-memory chat history (temporary)
-# ----------------------
+
 chat_history = []
 
 def add_to_chat_history(user_input: str, sentiment: str, reply: str):
