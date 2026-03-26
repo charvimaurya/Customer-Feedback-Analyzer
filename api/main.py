@@ -6,7 +6,7 @@ import nltk
 from fastapi import FastAPI, HTTPException, Depends
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
-from database import get_db, RawFeedback, CleanedFeedback, PositiveFeedback, NegativeFeedback, Feedback, init_db
+from database import get_db, Feedback, init_db
 
 # Download NLTK resources if not already present
 try:
@@ -58,39 +58,38 @@ class ReviewResponse(BaseModel):
 
 @app.get('/')
 def root():
-    return {'status': 'healthy', 'message': 'Customer Feedback Analyzer API is running with 4-table storage'}
+    return {'status': 'healthy', 'message': 'Customer Feedback Analyzer API is running with structured single-table storage'}
 
 @app.post("/predict", response_model=ReviewResponse)
 def predict_sentiment(request: ReviewRequest, db: Session = Depends(get_db)):
+    """
+    Analyzes a review and saves it to the 'feedbacks' table.
+    The table stores:
+    - Raw responses (raw_content)
+    - Processed responses (processed_content)
+    - Sentiment (Good/Bad/Neutral)
+    """
     try:
         raw_review = request.review
         if not raw_review or raw_review.strip() == "":
             raise HTTPException(status_code=400, detail="Review cannot be empty.")
 
-        # 1. Save to Raw Data Storage
-        new_raw = RawFeedback(review=raw_review)
-        db.add(new_raw)
-        db.flush() # Get the ID for linking
-
-        # 2. Clean and Save to Cleaned Data Storage
+        # 1. Clean the text
         cleaned_review = clean_text(raw_review)
-        new_cleaned = CleanedFeedback(cleaned_review=cleaned_review, source_id=new_raw.id)
-        db.add(new_cleaned)
 
-        # 3. Predict Sentiment
-        X = vectorizer.transform([cleaned_review]) # Predict on cleaned text
+        # 2. Predict Sentiment
+        X = vectorizer.transform([cleaned_review])
         pred = model.predict(X)[0]
         sentiment = "Good" if pred == 2 else "Neutral" if pred == 1 else "Bad"
 
-        # 4. Save to Positive/Negative/Legacy Storage
-        if sentiment == "Good":
-            db.add(PositiveFeedback(review=raw_review))
-        elif sentiment == "Bad":
-            db.add(NegativeFeedback(review=raw_review))
+        # 3. Save everything in one structured record
+        new_feedback = Feedback(
+            raw_content=raw_review,
+            processed_content=cleaned_review,
+            sentiment=sentiment
+        )
         
-        # Also maintain legacy feedbacks table for the history endpoint
-        db.add(Feedback(review=raw_review, sentiment=sentiment))
-        
+        db.add(new_feedback)
         db.commit()
 
         return {"sentiment": sentiment}
@@ -104,5 +103,6 @@ def predict_sentiment(request: ReviewRequest, db: Session = Depends(get_db)):
 @app.get("/history")
 def get_history(db: Session = Depends(get_db)):
     feedbacks = db.query(Feedback).order_by(Feedback.created_at.desc()).limit(10).all()
+    # Format for response if needed, but defaults to model fields
     return feedbacks
 

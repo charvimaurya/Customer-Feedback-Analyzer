@@ -1,6 +1,6 @@
 import os
 import time
-from sqlalchemy import create_engine, Column, Integer, String, DateTime
+from sqlalchemy import create_engine, Column, Integer, String, DateTime, Text
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 from datetime import datetime
@@ -15,51 +15,32 @@ SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 Base = declarative_base()
 
-# 1. Table for Raw Data Storage
-class RawFeedback(Base):
-    __tablename__ = "raw_feedbacks"
-    id = Column(Integer, primary_key=True, index=True)
-    review = Column(String, nullable=False)
-    created_at = Column(DateTime, default=datetime.utcnow)
-
-# 2. Table for Cleaned Data Storage
-class CleanedFeedback(Base):
-    __tablename__ = "cleaned_feedbacks"
-    id = Column(Integer, primary_key=True, index=True)
-    cleaned_review = Column(String, nullable=False)
-    source_id = Column(Integer) # Link to raw data
-    created_at = Column(DateTime, default=datetime.utcnow)
-
-# 3. Table for Positive Responses
-class PositiveFeedback(Base):
-    __tablename__ = "positive_feedbacks"
-    id = Column(Integer, primary_key=True, index=True)
-    review = Column(String, nullable=False)
-    sentiment = Column(String, default="Good")
-    created_at = Column(DateTime, default=datetime.utcnow)
-
-# 4. Table for Negative Responses
-class NegativeFeedback(Base):
-    __tablename__ = "negative_feedbacks"
-    id = Column(Integer, primary_key=True, index=True)
-    review = Column(String, nullable=False)
-    sentiment = Column(String, default="Bad")
-    created_at = Column(DateTime, default=datetime.utcnow)
-
-# Fallback/Legacy table (optional, keeping it for compatibility if needed, but let's stick to the 4 requested)
 class Feedback(Base):
+    """
+    Unified table for storing customer feedback at all stages.
+    - Raw responses: stored in raw_content
+    - Processed responses: stored in processed_content
+    - Positive/Negative responses: reflected in the sentiment column
+    """
     __tablename__ = "feedbacks"
+    
     id = Column(Integer, primary_key=True, index=True)
-    review = Column(String, nullable=False)
-    sentiment = Column(String, nullable=False)
+    raw_content = Column(Text, nullable=False)
+    processed_content = Column(Text, nullable=True)
+    sentiment = Column(String(20), index=True) # e.g., 'Good', 'Bad', 'Neutral'
     created_at = Column(DateTime, default=datetime.utcnow)
+
+    def __repr__(self):
+        return f"<Feedback(id={self.id}, sentiment='{self.sentiment}')>"
 
 def init_db():
     retries = 5
     while retries > 0:
         try:
+            # Note: In a production app, we'd use Alembic for migrations.
+            # To avoid issues with table schemas changing, we'll try to create them.
             Base.metadata.create_all(bind=engine)
-            print("Database initialized successfully with 4 main tables.")
+            print("Database initialized successfully with unified Feedback table.")
             return
         except Exception as e:
             print(f"Database not ready, retrying... ({retries} left). Error: {e}")

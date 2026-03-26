@@ -7,9 +7,11 @@ A production-ready sentiment analysis system for customer reviews with PostgreSQ
 This application analyzes customer feedback sentiment (Positive, Neutral, or Negative) using machine learning. It provides:
 - **REST API**: FastAPI-based backend for sentiment prediction
 - **Sentiment Analysis**: Pre-trained Logistic Regression model with TF-IDF vectorization
-- **Database Storage**: PostgreSQL with four-table architecture for raw data, cleaned data, positive reviews, and negative reviews
+- **Database Storage**: PostgreSQL with a unified, structured storage for raw data, cleaned data, and sentiment results
 - **Interactive Chatbot**: CLI-based chatbot that combines sentiment analysis with conversational AI
 - **Docker Support**: Fully containerized application with Docker Compose orchestration
+- **Streamlit UI**: A professional web dashboard for real-time analysis and history tracking
+- **Infrastucture as Code**: Terraform configuration for easy deployment to Google Cloud Run and Cloud SQL
 
 ---
 
@@ -122,7 +124,7 @@ INFO:     Uvicorn running on http://0.0.0.0:8000
 Open your web browser and navigate to:
 
 - **API Health Check**: [http://localhost:8000](http://localhost:8000)
-  - Should display: `{"status": "healthy", "message": "Customer Feedback Analyzer API is running with 4-table storage"}`
+  - Should display: `{"status": "healthy", "message": "Customer Feedback Analyzer API is running with structured single-table storage"}`
 
 - **Interactive API Documentation**: [http://localhost:8000/docs](http://localhost:8000/docs)
   - Provides a web interface to test all API endpoints
@@ -185,6 +187,47 @@ The chatbot provides a conversational interface for analyzing customer feedback.
 
 ---
 
+## Interactive Streamlit UI
+
+For a professional web experience, you can use the Streamlit interface:
+
+1. **Run locally**:
+   ```bash
+   streamlit run ui/app.py
+   ```
+2. **Access**: Navigate to `http://localhost:8501`
+3. **Features**:
+   - Real-time sentiment analysis
+   - Historical data visualization
+   - Premium, responsive design
+
+---
+
+## Cloud Deployment (Terraform)
+
+Deploy the entire stack to Google Cloud Platform using the provided Terraform scripts.
+
+### Prerequisites
+- Google Cloud SDK installed and authenticated
+- A GCP Project ID
+- Terraform installed
+
+### Deployment Steps
+1. **Initialize Terraform**:
+   ```bash
+   cd terraform
+   terraform init
+   ```
+2. **Apply Configuration**:
+   ```bash
+   terraform apply -var="project_id=YOUR_PROJECT_ID" -var="db_password=YOUR_DB_PASSWORD"
+   ```
+3. **Push Docker Images**:
+   - Tag and push your local images to the newly created Artifact Registry.
+   - The registry path will be provided in the Terraform outputs.
+
+---
+
 ## API Reference
 
 ### Endpoints
@@ -195,7 +238,7 @@ The chatbot provides a conversational interface for analyzing customer feedback.
 ```json
 {
   "status": "healthy",
-  "message": "Customer Feedback Analyzer API is running with 4-table storage"
+  "message": "Customer Feedback Analyzer API is running with structured single-table storage"
 }
 ```
 
@@ -237,13 +280,13 @@ The chatbot provides a conversational interface for analyzing customer feedback.
 
 ## Database Architecture
 
-The application uses a four-table PostgreSQL database structure:
+The application uses a unified, professionally structured PostgreSQL table to store all stages of feedback analysis:
 
-1. **`raw_feedback`**: Stores original, unprocessed customer reviews
-2. **`cleaned_feedback`**: Stores preprocessed text (lowercased, lemmatized, stop words removed)
-3. **`positive_feedback`**: Stores reviews classified as positive
-4. **`negative_feedback`**: Stores reviews classified as negative
-5. **`feedbacks`**: Legacy table maintaining all reviews with sentiment labels
+1. **`feedbacks`**: The primary table storing everything:
+   - `raw_content`: The original customer review
+   - `processed_content`: The preprocessed text (lowercased, lemmatized, stop words removed)
+   - `sentiment`: The classification result ('Good', 'Bad', or 'Neutral')
+   - `created_at`: Timestamp of analysis
 
 ---
 

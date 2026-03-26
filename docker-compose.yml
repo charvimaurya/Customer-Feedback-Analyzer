@@ -25,5 +25,17 @@ services:
     depends_on:
       - db
 
+  ui:
+    build:
+      context: .
+      dockerfile: Dockerfile.ui
+    container_name: customer_feedback_ui
+    ports:
+      - "8501:8501"
+    environment:
+      - API_URL=http://app:8000
+    depends_on:
+      - app
+
 volumes:
   postgres_data:
