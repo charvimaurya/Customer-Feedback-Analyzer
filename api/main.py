@@ -1,9 +1,10 @@
 import os
-from fastapi import FastAPI, HTTPException, UploadFile, File, Depends
+from fastapi import FastAPI, HTTPException, UploadFile, File, Depends, BackgroundTasks
 from pydantic import BaseModel
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 from services.review_analysis import read_reviews_from_file, analyze_reviews
+from services.scraper.scraper_service import scrape_reviews
 from services.sentiment_service import get_sentiment
 from services.chatbot import chat_with_openai
 
@@ -200,6 +201,68 @@ def analyze_file(
 @app.get("/history")
 def history():
     return chat_history
+# ----------------------
+# Scrape
+# ----------------------
+
+@app.post("/scrape")
+def scrape_endpoint(url: str, db: Session = Depends(get_db)):
+    """
+    Scrapes reviews from a URL and processes them immediately.
+    """
+    try:
+        reviews = scrape_reviews(url)
+
+        results = []
+
+        for review in reviews:
+            cleaned = clean_text(review)
+            sentiment = predict_sentiment(cleaned)
+
+            #store_review_pipeline(db, review, cleaned, sentiment)
+
+            results.append({
+                "review": review,
+                "sentiment": sentiment
+            })
+
+        return {
+            "total_scraped": len(results),
+            "results": results
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+def run_scraper_job(url: str):
+    """
+    Runs scraping pipeline in background.
+    """
+    from database.db import SessionLocal
+
+    db = SessionLocal()
+
+    try:
+        reviews = scrape_reviews(url)
+
+        for review in reviews:
+            cleaned = clean_text(review)
+            sentiment = predict_sentiment(cleaned)
+
+            #store_review_pipeline(db, review, cleaned, sentiment)
+
+    finally:
+        db.close()
 
 
+@app.post("/scrape-async")
+def scrape_async(url: str, bg: BackgroundTasks):
+    """
+    Starts scraping in background and returns immediately.
+    """
+    bg.add_task(run_scraper_job, url)
+
+    return {
+        "status": "scraping started",
+        "url": url
+    }
 

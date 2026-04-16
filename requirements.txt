@@ -18,3 +18,5 @@ pydantic
 openai
 requests
 python-multipart
+beautifulsoup4
+requests
