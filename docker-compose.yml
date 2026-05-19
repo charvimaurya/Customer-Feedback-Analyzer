@@ -22,6 +22,7 @@ services:
     environment:
       - DATABASE_URL=postgresql://user:password@db:5432/customer_feedback
       - PORT=8000
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
     depends_on:
       - db
 

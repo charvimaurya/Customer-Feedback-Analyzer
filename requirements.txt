@@ -18,3 +18,6 @@ pydantic
 openai
 requests
 streamlit
+python-multipart
+pytest
+httpx

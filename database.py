@@ -1,6 +1,6 @@
 import os
 import time
-from sqlalchemy import create_engine, Column, Integer, String, DateTime, Text
+from sqlalchemy import create_engine, Column, Integer, String, DateTime, Text, Float, Boolean
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 from datetime import datetime
@@ -29,9 +29,29 @@ class Feedback(Base):
     processed_content = Column(Text, nullable=True)
     sentiment = Column(String(20), index=True) # e.g., 'Good', 'Bad', 'Neutral'
     created_at = Column(DateTime, default=datetime.utcnow)
+    
+    # V1 PIS fields
+    intensity_score = Column(Integer, nullable=True) # 1-10
+    revenue_risk_flag = Column(Boolean, default=False)
+    insight_category = Column(String(255), index=True, nullable=True)
 
     def __repr__(self):
-        return f"<Feedback(id={self.id}, sentiment='{self.sentiment}')>"
+        return f"<Feedback(id={self.id}, sentiment='{self.sentiment}', category='{self.insight_category}')>"
+
+class InsightScore(Base):
+    """
+    Table for caching aggregated Problem Impact Scores (PIS) for insights.
+    """
+    __tablename__ = "insight_scores"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    category = Column(String(255), unique=True, index=True)
+    total_reviews = Column(Integer, default=0)
+    pis_score = Column(Float, default=0.0)
+    last_calculated_at = Column(DateTime, default=datetime.utcnow)
+
+    def __repr__(self):
+        return f"<InsightScore(category='{self.category}', pis_score={self.pis_score})>"
 
 def init_db():
     retries = 5

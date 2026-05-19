@@ -3,10 +3,14 @@ import os
 import re
 import string
 import nltk
-from fastapi import FastAPI, HTTPException, Depends
+from fastapi import FastAPI, HTTPException, Depends, UploadFile, File, BackgroundTasks
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
-from database import get_db, Feedback, init_db
+from database import get_db, Feedback, init_db, InsightScore
+import csv
+import io
+from datetime import datetime
+from api.scoring import process_review_with_llm, recalculate_all_pis
 
 # Download NLTK resources if not already present
 try:
@@ -106,3 +110,62 @@ def get_history(db: Session = Depends(get_db)):
     # Format for response if needed, but defaults to model fields
     return feedbacks
 
+def process_csv_background(content: bytes, db: Session):
+    """Background task to parse CSV, call LLM, save to DB, and recalculate PIS."""
+    try:
+        text = content.decode("utf-8")
+        reader = csv.DictReader(io.StringIO(text))
+        
+        for row in reader:
+            review_text = row.get("review_text") or row.get("ReviewText") or ""
+            if not review_text.strip():
+                continue
+                
+            date_str = row.get("review_date") or row.get("Date") or ""
+            review_date = datetime.utcnow()
+            if date_str:
+                try:
+                    review_date = datetime.fromisoformat(date_str.replace("Z", "+00:00"))
+                except ValueError:
+                    pass # Keep utcnow if parse fails
+            
+            # Process with LLM
+            llm_result = process_review_with_llm(review_text)
+            
+            # Save to DB
+            feedback = Feedback(
+                raw_content=review_text,
+                processed_content=clean_text(review_text),
+                sentiment="Neutral", # Can be mapped if needed, or left neutral for PIS
+                intensity_score=llm_result.get("intensity", 5),
+                revenue_risk_flag=llm_result.get("revenue_risk", False),
+                insight_category=llm_result.get("category", "Uncategorized"),
+                created_at=review_date
+            )
+            db.add(feedback)
+            
+        db.commit()
+        
+        # Recalculate PIS for all insights after batch upload
+        recalculate_all_pis(db)
+        
+    except Exception as e:
+        print(f"Error processing CSV: {e}")
+        db.rollback()
+
+@app.post("/upload-csv")
+def upload_csv(background_tasks: BackgroundTasks, file: UploadFile = File(...), db: Session = Depends(get_db)):
+    """Accepts a CSV file with reviews and processes them asynchronously."""
+    if not file.filename.endswith(".csv"):
+        raise HTTPException(status_code=400, detail="File must be a CSV.")
+    
+    content = file.file.read()
+    background_tasks.add_task(process_csv_background, content, db)
+    
+    return {"message": "CSV upload started processing in the background."}
+
+@app.get("/insights/ranked")
+def get_ranked_insights(db: Session = Depends(get_db)):
+    """Returns insights sorted by PIS score descending."""
+    insights = db.query(InsightScore).order_by(InsightScore.pis_score.desc()).all()
+    return insights
