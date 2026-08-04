@@ -14,6 +14,10 @@ This application analyzes customer feedback sentiment (Positive, Neutral, or Neg
 
 <img width="1322" height="1206" alt="image" src="https://github.com/user-attachments/assets/4d086b4e-dd9b-4406-a06c-015e8ed8948e" />
 
+## Architecture
+
+![Architecture Diagram](customer-feedback-analyzer.png)
+
 ## Project Structure 
 ```
 Customer-Feedback-Analyzer
