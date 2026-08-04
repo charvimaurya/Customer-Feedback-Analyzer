@@ -1,15 +1,116 @@
+
+Project description · MD
 # Customer Feedback Analyzer
-
-A production-ready sentiment analysis system for customer reviews with PostgreSQL database integration and an intelligent chatbot interface powered by OpenAI.
-
-## Overview
-
-This application analyzes customer feedback sentiment (Positive, Neutral, or Negative) using machine learning. It provides:
-- **REST API**: FastAPI-based backend for sentiment prediction
-- **Sentiment Analysis**: Pre-trained Logistic Regression model with TF-IDF vectorization
-- **Database Storage**: PostgreSQL with four-table architecture for raw data, cleaned data, positive reviews, and negative reviews
-- **Interactive Chatbot**: CLI-based chatbot that combines sentiment analysis with conversational AI
-- **Docker Support**: Fully containerized application with Docker Compose orchestration
+ 
+> An AI-powered system that transforms unstructured customer reviews into a prioritized, defensible action plan — in seconds, not hours.
+ 
+---
+ 
+## The Problem
+ 
+Product managers and business analysts are drowning in customer feedback. A mid-sized e-commerce brand can receive hundreds of reviews per week across Amazon, Trustpilot, Google Play, and their own platform. The bottleneck is never *collecting* the feedback — it's making sense of it.
+ 
+The current reality for most teams looks like this:
+ 
+- A PM manually reads through hundreds of reviews before a quarterly planning session
+- They highlight recurring complaints in a spreadsheet
+- They present a prioritized list to stakeholders based on gut feel and recency bias
+- Someone asks "why is sizing ahead of delivery on the roadmap?" and there's no data-backed answer
+- Two weeks later, a new wave of reviews arrives and the process starts again
+This is slow, subjective, and impossible to defend in a roadmap review. It also misses critical signals — a product issue that is getting *worse* over time looks identical to one that has been stable for months, and a review that says "I'm switching to a competitor" carries more business weight than one that says "not great" — but both get treated as the same negative data point.
+ 
+**The core problem: teams lack a system that converts qualitative, high-volume feedback into a ranked, auditable action list with built-in business context.**
+ 
+---
+ 
+## The Solution
+ 
+The Customer Feedback Analyzer is a full-stack AI system that ingests customer reviews from multiple sources, enriches each one with machine learning and large language model analysis, and surfaces a prioritized list of issues ranked by a compound scoring formula called the **Problem Impact Score (PIS)**.
+ 
+Instead of reading reviews, a PM pastes a product URL or uploads a CSV and gets back:
+ 
+- A ranked list of issue categories ordered by business impact
+- A severity score for each category that accounts for frequency, recency, and emotional intensity
+- Revenue risk flags on reviews that signal churn, returns, or brand switching
+- An AI chatbot to query the data in plain English
+The system does not just report what customers are saying. It tells you **what to fix first and why**, with a number anyone can audit.
+ 
+---
+ 
+## How It Works
+ 
+### Data ingestion
+Reviews enter the system through two paths:
+ 
+- **CSV / Excel / JSON upload** — for internal data exports, CRM dumps, NPS responses, or historical review archives
+- **URL scraper** — paste a Trustpilot, G2, or Google Play Store URL and the system fetches reviews directly, with no manual export step
+### Two-stage analysis pipeline
+ 
+**Stage 1 — Sentiment classification (ML model)**
+Each review is cleaned with NLTK, vectorized with TF-IDF, and classified as Good, Neutral, or Bad using a Logistic Regression model trained on customer review data. This runs locally with no API cost.
+ 
+**Stage 2 — LLM enrichment (GPT-4o-mini)**
+Each review is passed to GPT-4o-mini which extracts three additional signals that the sentiment classifier cannot provide:
+ 
+| Signal | What it captures |
+|---|---|
+| `insight_category` | The business area the review is about (e.g. Sizing & fit, Delivery, Return process) |
+| `intensity_score` | How strongly negative or positive, on a 1–10 scale — "awful" scores differently to "not great" |
+| `revenue_risk_flag` | Whether the review contains language that signals lost revenue — returns, refunds, brand switching, "never buying again" |
+ 
+### Problem Impact Score (PIS)
+ 
+Every insight category is scored on a single compound number:
+ 
+```
+PIS = frequency × recency_weight × avg_intensity × revenue_risk_multiplier
+```
+ 
+| Factor | Logic |
+|---|---|
+| `frequency` | How many reviews mention this issue out of the total |
+| `recency_weight` | Reviews from the last 30 days are weighted 3×, decaying linearly to 1× at 180 days |
+| `avg_intensity` | The mean intensity score across all reviews in this category |
+| `revenue_risk_multiplier` | 1.5× applied to any category where revenue-risk reviews are present |
+ 
+Nobody sees the formula. The PM sees a number from 0–100 next to each issue, colour-coded by severity, and knows that #1 needs fixing before #2. A problem that is getting *worse* over time surfaces faster than one that has been stable for a year. A category full of churn-language reviews scores higher than one of equal frequency with milder complaints.
+ 
+### Dashboard and export
+Results are displayed in a Streamlit dashboard with:
+- Four headline metrics (total reviews, negative rate, revenue risk count, average intensity)
+- A ranked PIS leaderboard with severity colour coding (🔥 critical, ⚠️ moderate, ✅ low)
+- Full review table with filters by sentiment, category, and source
+- An AI chatbot tab for plain-English queries against the review data
+- One-click export to PDF (stakeholder report), Excel (ranked data table), or JSON (developer use)
+---
+ 
+## Why This Is Different From Standard Sentiment Analysis
+ 
+Most sentiment analysis tools answer: *"Are customers happy?"*
+ 
+This system answers: *"What is the #1 thing costing us revenue, and how urgently do we need to fix it?"*
+ 
+The distinction matters because:
+ 
+- **Sentiment is a commodity.** Every major cloud provider offers it. The value is not in labelling reviews Good or Bad — it is in ranking the *categories* of problems by business impact.
+- **Recency decay is built in.** A wave of sizing complaints from last week outranks an equally frequent delivery issue from six months ago, automatically.
+- **Revenue language is separated from general negativity.** "The colour was a bit off" and "I'm never buying from this brand again" are both negative — but only one of them is a churn signal. The system treats them differently.
+- **The output is a prioritized action list, not a report.** The intended workflow is: reviews come in → PIS recalculates → highest-scoring issue is assigned to a team member → they action it → mark resolved → next issue surfaces. The system is built for doing, not just reading.
+---
+ 
+## Tech Stack
+ 
+| Layer | Technology |
+|---|---|
+| Backend API | FastAPI (Python) |
+| Frontend | Streamlit |
+| Database | PostgreSQL via SQLAlchemy |
+| Sentiment model | TF-IDF + Logistic Regression (scikit-learn) |
+| LLM enrichment | OpenAI `gpt-4o-mini` |
+| Web scraper | Requests + BeautifulSoup · Playwright (for JS-rendered pages) |
+| Containerisation | Docker Compose |
+ 
+---
 
 ## Architecture
 
@@ -53,14 +154,15 @@ Customer-Feedback-Analyzer
 
 ```
 
-## Tech Stack
-| Layer      | Technology            |
-| ---------- | --------------------- |
-| Backend    | FastAPI               |
-| AI / NLP   | Scikit-learn + OpenAI |
-| Database   | PostgreSQL            |
-| Frontend   | HTML, CSS, JS         |
-| Deployment | Docker                |
+## Who This Is Built For
+ 
+The primary user is a **product manager or business analyst** at a consumer-facing company who regularly reads customer reviews to inform their roadmap. They are comfortable with data but not necessarily technical. They need to walk into a planning meeting with a defensible, ranked list of issues — not a CSV of labelled sentiment.
+ 
+Secondary users include:
+- **Customer experience teams** triaging support issues
+- **E-commerce operators** monitoring competitor product pages on Trustpilot or G2
+- **Founders** who want a fast read on product-market fit signals from public reviews
+---
 
 
 ## Prerequisites
