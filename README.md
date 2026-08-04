@@ -16,7 +16,7 @@ This application analyzes customer feedback sentiment (Positive, Neutral, or Neg
 
 ## Architecture
 
-![Architecture Diagram](architecture (1).svg)
+![Architecture Diagram](architecture-diagram.svg)
 
 ## Project Structure 
 ```
