@@ -1,5 +1,4 @@
 
-Project description · MD
 # Customer Feedback Analyzer
  
 > An AI-powered system that transforms unstructured customer reviews into a prioritized, defensible action plan — in seconds, not hours.
